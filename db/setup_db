@@ -1,0 +1,27 @@
+"""
+Loads data/sales.csv into a local SQLite database (db/sales.db).
+
+Run:
+    python db/setup_db.py
+"""
+
+import sqlite3
+import pandas as pd
+import os
+
+DB_PATH = os.path.join(os.path.dirname(__file__), "sales.db")
+CSV_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "sales.csv")
+
+def build_db():
+    df = pd.read_csv(CSV_PATH)
+    conn = sqlite3.connect(DB_PATH)
+    df.to_sql("sales", conn, if_exists="replace", index=False)
+
+    # Helpful index for date-based queries
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_order_date ON sales(order_date)")
+    conn.commit()
+    conn.close()
+    print(f"Loaded {len(df)} rows into {DB_PATH}, table 'sales'")
+
+if __name__ == "__main__":
+    build_db()
